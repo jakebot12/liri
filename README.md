@@ -1,7 +1,7 @@
 # liri
 Entertainment search assistant:
 
-This app will take CLI inputs and return a form of searched entertainment, such as movies, music, or concerts. Informatikon obtained will be as follows:
+This app will take CLI inputs and return a form of searched entertainment, such as movies, music, or concerts. Information obtained will be as follows:
 
 For movies:
  - Title of the movie.
