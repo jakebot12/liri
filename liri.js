@@ -1,16 +1,32 @@
+//initialize variables
 var fs = require("fs");
 var axios = require("axios");
 var keys = require("./keys.js");
 var https = require("https");
 var queryEntry = process.argv[3];
 var Spotify = require("node-spotify-api");
-
 var spotify = new Spotify({
   id: "1614bc440f4948d8894916b6018691d5",
   secret: "20c17c8313b34f9383b113aa07496b5e"
 });
 
-var spotifyRequest = function(song = "The Sign Ace of Base") {
+//create function to grab text from file 'random.txt' and use it as the input for spotify-this-song.
+var textGetter = function() {
+  var fs = require("fs");
+  var array1 = fs
+    .readFileSync("random.txt")
+    .toString()
+    .split(",");
+  for (i in array1) {
+    //console.log(array1[i]);
+    queryEntry = array1[1];
+  }
+  console.log("The song you have stored in file 'random.txt' = " + queryEntry);
+  spotifyRequest(); 
+};
+
+//create a function to handle requests to SpotifyAPI.
+var spotifyRequest = function(song = "The Sign - Ace of Base") {
   spotify.search({ type: "track", query: song }, function(err, data) {
     if (err) {
       return console.log("Error occurred: " + err);
@@ -24,6 +40,7 @@ var spotifyRequest = function(song = "The Sign Ace of Base") {
   });
 };
 
+//a script to run if there is no input chosen for the movie search.
 var consoleScript = function() {
   console.log("-------------------------");
   console.log(
@@ -34,18 +51,17 @@ var consoleScript = function() {
   movieRequest();
 };
 
+//create a function to handle movie requests from OMDB API.
 var movieRequest = function(movie = "Mr. Nobody") {
   axios
     .get("https://www.omdbapi.com/?t=" + movie + "&y=short&apikey=trilogy")
     .then(function(response) {
       //console.log(response);
-
-      //could't find the data for Rotten Tomatoes Ratings in the OMDB data object, so I entered the Metascore in this field for now, which uses the same scoring methods as Rotten Tomatoes, and is also statistically very congruent with it.
-
       console.log("Movie Title: " + response.data.Title);
       console.log("Release Year: " + response.data.Year);
       console.log("IMDB Rating: " + response.data.imdbRating);
 
+      //loop for finding the correct rating for Rotten Tomatoes in the [Ratings] object(they're not always in the same index position).
       for (i = 0; i < response.data.Ratings.length; i++) {
         var rottenTomatoesRating = response.data.Ratings[i].Value;
         if (response.data.Ratings[i].Source === "Rotten Tomatoes") {
@@ -64,15 +80,18 @@ var movieRequest = function(movie = "Mr. Nobody") {
     });
 };
 
-var axiosCall = function() {
+//create a function for handling the Bands in Town concert finder API.
+var axiosCall = function(artists = "Metallica") {
   //axios = require("axios");
   axios
     .get(
       "https://rest.bandsintown.com/artists/" +
-        queryEntry +
+        artists +
         "/events?app_id=codingbootcamp"
     )
     .then(function(response) {
+      //console.log(response);
+      console.log(artists);
       console.log("Venue Name: " + response.data[0].venue.name);
       console.log(
         "General Venue Location: " +
@@ -83,18 +102,17 @@ var axiosCall = function() {
     });
 };
 
-//Add function for do-what-it-says
-
-//doWhatItSays();
-//add logic for do-what-it-says
+//logical case statements handling the CLI functions.
 if (process.argv[2] === "concert-this") {
-  axiosCall();
+  axiosCall(queryEntry);
 } else if (process.argv[2] === "spotify-this-song") {
   spotifyRequest(queryEntry);
-} else if ((process.argv[2] === "movie-this") && (queryEntry === undefined)) {
+} else if (process.argv[2] === "movie-this" && queryEntry === undefined) {
   consoleScript();
 } else if (process.argv[2] === "movie-this") {
   movieRequest(queryEntry);
+} else if (process.argv[2] === "do-what-it-says") {
+  textGetter();
 } else {
   console.log("I'm sorry, I didn't recognise that request.");
 }
